@@ -1,156 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Data Arrangement</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santosh Chimoriya</title>
     <style>
-        table {
-            border-collapse: collapse;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
         }
-
-        th, td {
+        h2 {
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
             border: 1px solid black;
-            padding: 8px;
+        }
+        th, td {
+            padding: 10px;
             text-align: left;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
-  <a href="https://dropover.cloud/9168d0" target="_blank"><button>Show Copy Format</button></a> <!-- Updated button -->
-    <br><br>
-    <input type="checkbox" id="myCheckbox" name="myCheckbox">
-<label for="myCheckbox">Check If Data is historical</label>
-    <input type="date" id="dateInput" value="" /><br><br>
-    <textarea id="dataInput" rows="10" cols="50"></textarea><br>
-    <button onclick="arrangeData()">Arrange Data</button>
-    <button onclick="storeData()">Store Data</button><br><br>
-    <h1 id="myH1"></h1>
-    <table id="dataTable">
-        <tr>
-            <th>Date</th>
-            <th>Company Name</th>
-            <th>Wacc For Sold</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Types</th>
-        </tr>
-    </table>
-
+    <div class="container">
+        <h2>Enter Data</h2>
+        <form id="dataForm">
+            <input type="text" id="name" placeholder="Enter Name" required>
+            <input type="number" id="age" placeholder="Enter Age" required>
+            <input type="email" id="email" placeholder="Enter Email" required>
+            <button type="button" onclick="addData()">Add</button>
+        </form>
+    </div>
+    
+    <div class="container">
+        <h2>Data Table</h2>
+        <table id="dataTable">
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Email</th>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="container">
+        <h2>About</h2>
+        <p><a href="about.html">Click here to learn more about this project</a></p>
+    </div>
+    
     <script>
-        // Set default input date as today's date
-        var today = new Date().toISOString().split("T")[0];
-        document.getElementById("dateInput").value = today;
-
-        function arrangeData() {
-            var inputDate = document.getElementById("dateInput").value;
-            var input = document.getElementById("dataInput").value;
-            var lines = input.split("\n");
-
-            var table = document.getElementById("dataTable");
-            var companyCounts = {};
-
-            // Clear existing table rows
-            while (table.rows.length > 1) {
-                table.deleteRow(1);
-            }
-
-            for (var i = 0; i < lines.length; i++) {
-                var columns = lines[i].split("\t");
-                var companyName = columns[0];
-                var quantity, price;
-
-                  if (document.getElementById("myCheckbox").checked) {
-                      quantity = parseNumber(columns[2]);
-                      price = parseNumber(columns[3]);
-                  } else {
-                      quantity = parseNumber(columns[3]);
-                      price = parseNumber(columns[2]);
-                  }
-                if (!companyCounts[companyName]) {
-                    companyCounts[companyName] = 1;
-                } else {
-                    companyCounts[companyName]++;
-                }
-
+        function addData() {
+            var name = document.getElementById("name").value;
+            var age = document.getElementById("age").value;
+            var email = document.getElementById("email").value;
+            
+            if (name && age && email) {
+                var table = document.getElementById("dataTable");
                 var row = table.insertRow(-1);
-
-                var dateCell = row.insertCell(0);
-                var dateInput = document.createElement("input");
-                dateInput.type = "date";
-                dateInput.value = inputDate;
-                dateCell.appendChild(dateInput);
-
-                var companyNameCell = row.insertCell(1);
-                companyNameCell.appendChild(document.createTextNode(companyName));
-
-                var waccCell = row.insertCell(2);
-                waccCell.appendChild(document.createTextNode("")); // Set Wacc For Sold to empty
-
-                var quantityCell = row.insertCell(3);
-                quantityCell.appendChild(document.createTextNode(quantity));
-
-                var priceCell = row.insertCell(4);
-                priceCell.appendChild(document.createTextNode(price));
-
-                var typesCell = row.insertCell(5);
-                typesCell.appendChild(document.createTextNode(columns[1]));
-            }
-
-            // Clear the input box after arranging the data
-            document.getElementById("dataInput").value = "";
-        }
-
-        function storeData() {
-            var table = document.getElementById("dataTable");
-            var data = [];
-
-            // Skip the first row (header)
-            for (var i = 1; i < table.rows.length; i++) {
-                var row = table.rows[i];
-                var rowData = [];
-
-                for (var j = 1; j < row.cells.length; j++) { // Exclude the first column (date column)
-                    var cellValue = row.cells[j].innerText;
-                    rowData.push(cellValue);
-                }
-
-                data.push(rowData);
-            }
-
-            // Get the input date value
-            var inputDate = document.getElementById("dateInput").value;
-
-            // Prepend the date to each row of data
-            data.forEach(function (rowData) {
-                rowData.unshift(inputDate);
-            });
-
-            // Call the server-side script to store the data
-            google.script.run.storeDataToSheet(data);
-
-            // Clear the table
-            while (table.rows.length > 1) {
-                table.deleteRow(1);
-            }
-            // Display a message in the <h1> tag for 3 seconds
-            var h1Tag = document.getElementById("myH1");
-            h1Tag.innerText = "Data stored successfully.";
-
-          setTimeout(function() {
-           h1Tag.innerText = "";
-          }, 3000);
-
-
-        }
-
-        function parseNumber(value) {
-            if (value.includes(',')) {
-                // Remove commas and parse as float
-                return parseFloat(value.replace(/,/g, ''));
+                row.insertCell(0).innerHTML = name;
+                row.insertCell(1).innerHTML = age;
+                row.insertCell(2).innerHTML = email;
+                
+                document.getElementById("dataForm").reset();
             } else {
-                return parseFloat(value);
+                alert("Please fill all fields.");
             }
         }
     </script>
-    <script src="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"></script>
 </body>
 </html>
