@@ -1,60 +1,156 @@
-<t name="Blog Posts" t-name="website_blog.blog_post_short">
-    <t t-call="website_blog.index">
-        <t t-set="head">
-            <link t-if="blog" t-att-href="'/blog/%s/feed' % slug(blog)" type="application/atom+xml" rel="alternate" title="Atom Feed"/>
-            <meta t-if="active_tag_ids" name="robots" t-attf-content="none"/>
-        </t>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Arrangement</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
 
-        <!-- Check for active options: the stored value may be used in sub-templates too  -->
-        <t t-set="opt_blog_cards_design" t-value="is_view_active('website_blog.opt_blog_cards_design')"/>
-        <t t-set="opt_blog_list_view" t-value="is_view_active('website_blog.opt_blog_list_view')"/>
-        <t t-set="opt_blog_readable" t-value="is_view_active('website_blog.opt_blog_readable')"/>
-        <t t-set="opt_blog_sidebar_show" t-value="is_view_active('website_blog.opt_blog_sidebar_show')"/>
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+  <a href="https://dropover.cloud/9168d0" target="_blank"><button>Show Copy Format</button></a> <!-- Updated button -->
+    <br><br>
+    <input type="checkbox" id="myCheckbox" name="myCheckbox">
+<label for="myCheckbox">Check If Data is historical</label>
+    <input type="date" id="dateInput" value="" /><br><br>
+    <textarea id="dataInput" rows="10" cols="50"></textarea><br>
+    <button onclick="arrangeData()">Arrange Data</button>
+    <button onclick="storeData()">Store Data</button><br><br>
+    <h1 id="myH1"></h1>
+    <table id="dataTable">
+        <tr>
+            <th>Date</th>
+            <th>Company Name</th>
+            <th>Wacc For Sold</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Types</th>
+        </tr>
+    </table>
 
-        <div id="o_wblog_blog_top">
-            <!-- Selectively display droppable-areas for 'all blogs' or single-blog pages -->
-            <t t-if="not tag and not date_begin and not search">
-                <div id="o_wblog_blog_top_droppable"/>
-                <t t-if="blog">
-                    <t t-set="oe_structure_blog_single_header_description">Edit the '<t t-esc="blog.name"/>' page header.</t>
-                    <div t-field="blog.content" t-att-data-editor-sub-message="oe_structure_blog_single_header_description"/>
-                </t>
-                <t t-elif="blogs">
-                    <t t-set="oe_structure_blog_all_header_description">Edit the 'All Blogs' page header.</t>
-                    <div class="oe_structure" t-att-data-editor-sub-message="oe_structure_blog_all_header_description"/>
-                </t>
-            </t>
-            <t t-else="">
-                <!-- Droppable-area for filtered results (tags or date) -->
-                <t t-set="oe_structure_blog_filtered_header_description">Edit the 'Filter Results' page header.</t>
-                <div class="oe_structure" id="oe_structure_blog_filtered_header" t-att-data-editor-sub-message="oe_structure_blog_filtered_header_description"/>
-            </t>
-        </div>
+    <script>
+        // Set default input date as today's date
+        var today = new Date().toISOString().split("T")[0];
+        document.getElementById("dateInput").value = today;
 
-        <t t-call="website_blog.blogs_nav">
-            <t t-set="search" t-value="original_search or search"/>
-            <t t-set="additional_classes" t-value="'mt-3'"/>
-        </t>
+        function arrangeData() {
+            var inputDate = document.getElementById("dateInput").value;
+            var input = document.getElementById("dataInput").value;
+            var lines = input.split("\n");
 
-        <section id="o_wblog_index_content" t-att-class="opt_blog_cards_design and 'o_wblog_page_cards_bg'">
-            <div class="container py-4">
-                <div t-if="original_search and posts" class="alert alert-warning mt8">
-                    No results found for '<span t-esc="original_search"/>'. Showing results for '<span t-esc="search"/>'.
-                </div>
-                <div t-attf-class="row #{opt_blog_sidebar_show and 'justify-content-between' or 'justify-content-center'}">
-                    <div id="o_wblog_posts_loop_container" t-attf-class="col #{'o_container_small mx-0' if opt_blog_list_view else ''}">
+            var table = document.getElementById("dataTable");
+            var companyCounts = {};
 
-                        <t t-call="website_blog.posts_loop">
-                            <t t-if="not blog" t-set="posts_list_show_parent_blog" t-value="True"/>
-                        </t>
+            // Clear existing table rows
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
 
-                        <t t-call="website.pager">
-                            <t t-set="classname" t-valuef="justify-content-center"/>
-                            <t t-set="extraLinkClass" t-valuef="post_link"/>
-                        </t>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </t>
-</t>
+            for (var i = 0; i < lines.length; i++) {
+                var columns = lines[i].split("\t");
+                var companyName = columns[0];
+                var quantity, price;
+
+                  if (document.getElementById("myCheckbox").checked) {
+                      quantity = parseNumber(columns[2]);
+                      price = parseNumber(columns[3]);
+                  } else {
+                      quantity = parseNumber(columns[3]);
+                      price = parseNumber(columns[2]);
+                  }
+                if (!companyCounts[companyName]) {
+                    companyCounts[companyName] = 1;
+                } else {
+                    companyCounts[companyName]++;
+                }
+
+                var row = table.insertRow(-1);
+
+                var dateCell = row.insertCell(0);
+                var dateInput = document.createElement("input");
+                dateInput.type = "date";
+                dateInput.value = inputDate;
+                dateCell.appendChild(dateInput);
+
+                var companyNameCell = row.insertCell(1);
+                companyNameCell.appendChild(document.createTextNode(companyName));
+
+                var waccCell = row.insertCell(2);
+                waccCell.appendChild(document.createTextNode("")); // Set Wacc For Sold to empty
+
+                var quantityCell = row.insertCell(3);
+                quantityCell.appendChild(document.createTextNode(quantity));
+
+                var priceCell = row.insertCell(4);
+                priceCell.appendChild(document.createTextNode(price));
+
+                var typesCell = row.insertCell(5);
+                typesCell.appendChild(document.createTextNode(columns[1]));
+            }
+
+            // Clear the input box after arranging the data
+            document.getElementById("dataInput").value = "";
+        }
+
+        function storeData() {
+            var table = document.getElementById("dataTable");
+            var data = [];
+
+            // Skip the first row (header)
+            for (var i = 1; i < table.rows.length; i++) {
+                var row = table.rows[i];
+                var rowData = [];
+
+                for (var j = 1; j < row.cells.length; j++) { // Exclude the first column (date column)
+                    var cellValue = row.cells[j].innerText;
+                    rowData.push(cellValue);
+                }
+
+                data.push(rowData);
+            }
+
+            // Get the input date value
+            var inputDate = document.getElementById("dateInput").value;
+
+            // Prepend the date to each row of data
+            data.forEach(function (rowData) {
+                rowData.unshift(inputDate);
+            });
+
+            // Call the server-side script to store the data
+            google.script.run.storeDataToSheet(data);
+
+            // Clear the table
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            // Display a message in the <h1> tag for 3 seconds
+            var h1Tag = document.getElementById("myH1");
+            h1Tag.innerText = "Data stored successfully.";
+
+          setTimeout(function() {
+           h1Tag.innerText = "";
+          }, 3000);
+
+
+        }
+
+        function parseNumber(value) {
+            if (value.includes(',')) {
+                // Remove commas and parse as float
+                return parseFloat(value.replace(/,/g, ''));
+            } else {
+                return parseFloat(value);
+            }
+        }
+    </script>
+    <script src="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"></script>
+</body>
+</html>
